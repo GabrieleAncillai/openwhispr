@@ -1291,6 +1291,8 @@ export interface SettingsState
   setXaiApiKey: (key: string) => void;
   setMistralApiKey: (key: string) => void;
   setOpenrouterApiKey: (key: string) => void;
+  setOpencodeGoApiKey: (key: string) => void;
+  setOpencodeZenApiKey: (key: string) => void;
   setCortiClientId: (key: string) => void;
   setCortiClientSecret: (key: string) => void;
   setCortiApiKey: (key: string) => void;
@@ -1533,6 +1535,8 @@ const SECRET_IPC_SAVERS = {
   xai: "saveXaiKey",
   mistral: "saveMistralKey",
   openrouter: "saveOpenrouterKey",
+  opencodeGo: "saveOpencodeGoKey",
+  opencodeZen: "saveOpencodeZenKey",
   cortiClientId: "saveCortiClientId",
   cortiClientSecret: "saveCortiClientSecret",
   cortiApiKey: "saveCortiKey",
@@ -1583,6 +1587,8 @@ const STALE_SECRET_LOCALSTORAGE_KEYS = [
   "xaiApiKey",
   "mistralApiKey",
   "openrouterApiKey",
+  "opencodeGoApiKey",
+  "opencodeZenApiKey",
   "cortiClientId",
   "cortiClientSecret",
   "cortiApiKey",
@@ -1615,6 +1621,8 @@ function invalidateApiKeyCaches(
     | "custom"
     | "openrouter"
     | "corti"
+    | "opencode-go"
+    | "opencode-zen"
 ) {
   if (_ReasoningService) {
     _ReasoningService.clearApiKeyCache(provider);
@@ -1712,6 +1720,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   xaiApiKey: "",
   mistralApiKey: "",
   openrouterApiKey: "",
+  opencodeGoApiKey: "",
+  opencodeZenApiKey: "",
   cortiClientId: "",
   cortiClientSecret: "",
   cortiApiKey: "",
@@ -2400,6 +2410,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setXaiApiKey: createSecretSetter("xaiApiKey", "xai"),
   setMistralApiKey: createSecretSetter("mistralApiKey", "mistral", "mistral"),
   setOpenrouterApiKey: createSecretSetter("openrouterApiKey", "openrouter", "openrouter"),
+  setOpencodeGoApiKey: createSecretSetter("opencodeGoApiKey", "opencodeGo", "opencode-go"),
+  setOpencodeZenApiKey: createSecretSetter("opencodeZenApiKey", "opencodeZen", "opencode-zen"),
   setCortiClientId: (key: string) => {
     set({ cortiClientId: key });
     debouncedSaveSecret("cortiClientId", key);
@@ -2910,6 +2922,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     if (keys.xaiApiKey !== undefined) s.setXaiApiKey(keys.xaiApiKey);
     if (keys.mistralApiKey !== undefined) s.setMistralApiKey(keys.mistralApiKey);
     if (keys.openrouterApiKey !== undefined) s.setOpenrouterApiKey(keys.openrouterApiKey);
+    if (keys.opencodeGoApiKey !== undefined) s.setOpencodeGoApiKey(keys.opencodeGoApiKey);
+    if (keys.opencodeZenApiKey !== undefined) s.setOpencodeZenApiKey(keys.opencodeZenApiKey);
     if (keys.cortiClientId !== undefined) s.setCortiClientId(keys.cortiClientId);
     if (keys.cortiClientSecret !== undefined) s.setCortiClientSecret(keys.cortiClientSecret);
     if (keys.cortiApiKey !== undefined) s.setCortiApiKey(keys.cortiApiKey);
@@ -3572,6 +3586,8 @@ export async function initializeSettings(): Promise<void> {
         xai,
         mistral,
         openrouter,
+        opencodeGo,
+        opencodeZen,
         cortiClientId,
         cortiClientSecret,
         cortiApiKey,
@@ -3598,6 +3614,8 @@ export async function initializeSettings(): Promise<void> {
         window.electronAPI.getXaiKey?.(),
         window.electronAPI.getMistralKey?.(),
         window.electronAPI.getOpenrouterKey?.(),
+        window.electronAPI.getOpencodeGoKey?.(),
+        window.electronAPI.getOpencodeZenKey?.(),
         window.electronAPI.getCortiClientId?.(),
         window.electronAPI.getCortiClientSecret?.(),
         window.electronAPI.getCortiKey?.(),
@@ -3626,6 +3644,8 @@ export async function initializeSettings(): Promise<void> {
         xaiApiKey: xai || "",
         mistralApiKey: mistral || "",
         openrouterApiKey: openrouter || "",
+        opencodeGoApiKey: opencodeGo || "",
+        opencodeZenApiKey: opencodeZen || "",
         cortiClientId: cortiClientId || "",
         cortiClientSecret: cortiClientSecret || "",
         cortiApiKey: cortiApiKey || "",
