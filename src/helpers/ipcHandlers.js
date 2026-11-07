@@ -141,6 +141,7 @@ const { focusWindowsHotkeyCaptureWindow } = require("./hotkeyCaptureFocus");
 const { createTinfoilRealtimeSocket } = require("./tinfoilSecureClient");
 const { TINFOIL_REALTIME_MODEL } = require("./tinfoilRealtimeStreaming");
 const { getTinfoilChatModels } = require("./tinfoilCatalog");
+const { getOpencodeModels } = require("./opencodeCatalog");
 const { transcribeWithTinfoil } = require("./tinfoilTranscription");
 const { transcribeWithGemini } = require("./geminiTranscription");
 const AudioStorageManager = require("./audioStorage");
@@ -5336,6 +5337,14 @@ class IPCHandlers {
       return getTinfoilChatModels();
     });
 
+    ipcMain.handle("get-opencode-models", async (_event, providerId) => {
+      const provider = getOpencodeProvider(providerId);
+      return getOpencodeModels(provider.id, {
+        apiKey: this.environmentManager[provider.keyGetter](),
+        fetch: (url, init) => net.fetch(url, { ...init, useSessionCookies: false }),
+      });
+    });
+
     // Enclave attestation is Node-only, so batch transcription is proxied through main.
     ipcMain.handle(
       "proxy-tinfoil-transcription",
@@ -6179,6 +6188,10 @@ class IPCHandlers {
     this.opencodeStreamAborts = new Map();
     ipcMain.handle("opencode-stream-start", async (event, payload) => {
       const { streamId, provider: providerId, modelId, options } = payload || {};
+      const sessionId =
+        typeof payload?.sessionId === "string" && payload.sessionId.trim()
+          ? payload.sessionId.trim().slice(0, 128)
+          : undefined;
       let label = "OpenCode";
       const send = (message) => {
         if (!event.sender.isDestroyed()) {
@@ -6209,7 +6222,7 @@ class IPCHandlers {
         const client = createOpenAI({
           apiKey,
           baseURL: provider.baseUrl,
-          headers: opencodeHeaders(provider.id),
+          headers: opencodeHeaders(provider.id, { sessionId }),
           fetch: (url, init) => net.fetch(url, { ...init, useSessionCookies: false }),
         });
         const model = client.chat(modelId);

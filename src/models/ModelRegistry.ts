@@ -2,6 +2,11 @@ import modelDataRaw from "./modelRegistryData.json";
 import { isCloudCleanupMode, getSettings } from "../stores/settingsStore";
 import { isSelectableTinfoilModel } from "../config/retiredCloudModelPolicy.js";
 import { readCachedTinfoilModels } from "./tinfoilModelCache";
+import { readCachedOpencodeModels } from "./opencodeModelCache";
+import {
+  isOpencodeCatalogProvider,
+  OPENCODE_CATALOG_PROVIDER_IDS,
+} from "../config/opencodeModelPolicy.js";
 import { filterMeetingStreamingProviders } from "../helpers/meetingTranscriptionRouting";
 import type { InferenceMode } from "../types/electron";
 
@@ -156,6 +161,14 @@ if (cachedTinfoilModels.length > 0) {
   }
 }
 
+for (const providerId of OPENCODE_CATALOG_PROVIDER_IDS) {
+  const cached = readCachedOpencodeModels(providerId).models;
+  const provider = modelData.cloudProviders.find((entry) => entry.id === providerId);
+  if (cached.length > 0 && provider) {
+    provider.models = cached;
+  }
+}
+
 class ModelRegistry {
   private static instance: ModelRegistry;
   private providers = new Map<string, ModelProvider>();
@@ -261,9 +274,11 @@ export function enterpriseProviderName(provider: EnterpriseProvider | "openai-co
 }
 
 export function toReasoningModel(m: CloudModelDefinition): ReasoningModel {
+  // A missing display name renders as a blank row; the id always reads.
+  const name = typeof m.name === "string" ? m.name.trim() : "";
   return {
     value: m.id,
-    label: m.name,
+    label: name || m.id,
     description: m.description,
     descriptionKey: m.descriptionKey,
     legacy: m.legacy,
@@ -325,6 +340,29 @@ export function getTinfoilModels(): CloudModelDefinition[] {
 
 export function getCloudProviderDefaultModelId(providerId: string): string | undefined {
   return modelData.cloudProviders.find((provider) => provider.id === providerId)?.defaultModel;
+}
+
+export function getOpencodeCatalogModels(providerId: string): CloudModelDefinition[] {
+  return modelData.cloudProviders.find((provider) => provider.id === providerId)?.models ?? [];
+}
+
+export function getOpencodeCatalogModel(
+  providerId: string,
+  modelId: string
+): CloudModelDefinition | undefined {
+  return getOpencodeCatalogModels(providerId).find((model) => model.id === modelId);
+}
+
+export function applyOpencodeModels(providerId: string, models: CloudModelDefinition[]): void {
+  if (models.length === 0) return;
+  const provider = modelData.cloudProviders.find((entry) => entry.id === providerId);
+  if (provider) {
+    provider.models = models;
+  }
+  const reasoningProvider = REASONING_PROVIDERS[providerId];
+  if (reasoningProvider) {
+    reasoningProvider.models = models.map(toReasoningModel);
+  }
 }
 
 export function applyTinfoilModels(models: CloudModelDefinition[]): void {
@@ -491,6 +529,9 @@ export function getCloudModel(
   providerId?: string
 ): CloudModelDefinition | undefined {
   for (const provider of modelData.cloudProviders) {
+    // OpenCode's ids (glm-5.3, kimi-k3) are served by other providers and custom
+    // endpoints too, so only a request to OpenCode itself may read its list.
+    if (isOpencodeCatalogProvider(provider.id) && provider.id !== providerId) continue;
     const model = provider.models.find((m) => m.id === modelId);
     if (model) return model;
   }
