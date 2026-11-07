@@ -253,7 +253,7 @@ OpenWhispr is an Electron-based desktop dictation application that uses whisper.
 
 - **ReasoningService.ts**: AI processing for agent-addressed commands
   - Detects when user addresses their named agent and removes the agent name from final output
-  - Provider implementations live in a registry at `src/services/ai/inferenceProviders/index.ts` covering 8 providers (`anthropic`, `enterprise`, `gemini`, `groq`, `lan`, `local`, `openai`, `openwhispr`), each implementing the `InferenceProvider` interface from `types.ts`
+  - Provider implementations live in a registry at `src/services/ai/inferenceProviders/index.ts` covering 12 providers (`anthropic`, `corti`, `enterprise`, `gemini`, `groq`, `lan`, `local`, `opencode-go`, `opencode-zen`, `openai`, `openwhispr`, `tinfoil`), each implementing the `InferenceProvider` interface from `types.ts`
   - Per-scope LLM config: 4 scopes (`dictationCleanup`, `dictationAgent`, `noteFormatting`, `chatIntelligence`) defined in `src/config/inferenceScopes.ts`
   - `selectResolvedLLMConfig(state, scope)` in `settingsStore.ts` resolves provider/model per scope with fallback chains
 
@@ -497,6 +497,10 @@ All desktop AI model definitions are centralized in `src/models/modelRegistryDat
 - `openwhispr-mobile/src/config/providerCatalog.json` - Mobile's trimmed copy of the OpenAI and Groq entries. It, mobile's endpoint rules and its cleanup prompt (`openwhispr-mobile/src/config/prompts/defaultPrompts.json`) are copies, not shared code, so update them by hand when desktop's change (the catalog is covered in `openwhispr-mobile/CONTRIBUTING.md`)
 - `src/models/ModelRegistry.ts` - TypeScript wrapper with helper methods; also derives
   `REASONING_PROVIDERS` (`buildReasoningProviders()`), consumed by the model pickers
+- `src/config/opencodeModelPolicy.js` - Pure ESM policy for OpenCode's live model lists, shared by main and renderer: keeps only `type: "chat"` models that declare the `chat-completions` protocol (the only transport this app speaks), drops zero-priced, `-free`/`contributor` and locally-deprecated ids, reads `capabilities.temperature` strictly, no `supportsThinking`, blank display names fall back to the id
+- `src/helpers/opencodeCatalog.js` - Main-process fetch of `{baseUrl}/models` (one request per product, 10s timeout, in-flight dedupe, 60s failure backoff); the API key is sent as `Authorization: Bearer` when set
+- `src/models/opencodeModelCache.ts` + `src/models/opencodeModels.ts` + `src/hooks/useOpencodeModels.ts` - Renderer cache (`opencodeModels:<providerId>` in localStorage, 1h freshness), refresh/reconcile into `retiredModelSwitchStore`, and picker hook — the same shape as Tinfoil's `tinfoilModelCache.ts` / `useTinfoilModels.ts`
+- OpenCode ships a 4-model offline seed per product in `modelRegistryData.json` (verified against live payloads); `getCloudModel` skips OpenCode's lists unless the caller names that provider, so a same-named custom model (e.g. `glm-5.3` on Ollama Cloud) keeps its own request shape
 - `src/models/providerDefaultModel.ts` - `pickProviderDefaultModel()`; with no
   `defaultModel` on the provider, the first model in the array is the default
 - `src/models/legacyModels.ts` - `isListedModel()`: an entry marked `"legacy": true` stays in the
