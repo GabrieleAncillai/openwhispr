@@ -10,6 +10,7 @@ import type {
 import { Button } from "./ui/button";
 import { CircleAlert, Cloud, Lock, Zap } from "./icons";
 import ModelCardList from "./ui/ModelCardList";
+import SearchableModelList, { MODEL_SEARCH_THRESHOLD } from "./ui/SearchableModelList";
 import LocalModelPicker, { type LocalProvider } from "./LocalModelPicker";
 import { ProviderTabs, type ProviderTabItem } from "./ui/ProviderTabs";
 import OpenAICompatiblePanel from "./OpenAICompatiblePanel";
@@ -21,6 +22,8 @@ import {
   isProviderValidForMode,
 } from "../models/ModelRegistry";
 import { useTinfoilModels } from "../hooks/useTinfoilModels";
+import { useOpencodeModels } from "../hooks/useOpencodeModels";
+import { isOpencodeCatalogProvider } from "../config/opencodeModelPolicy.js";
 import { getRemoteProviderIcon } from "../utils/providerIcons";
 import { GetApiKeyLink } from "./ui/GetApiKeyLink";
 import { ConnectionCheckAnnouncer } from "./ui/ConnectionCheckAnnouncer";
@@ -405,6 +408,17 @@ export default function ReasoningModelSelector({
     loading: tinfoilModelsLoading,
     error: tinfoilModelsError,
   } = useTinfoilModels(displayedCloudProvider === "tinfoil");
+  const {
+    models: opencodeModels,
+    loading: opencodeModelsLoading,
+    error: opencodeModelsError,
+  } = useOpencodeModels(displayedCloudProvider);
+  const catalogModelsLoading = tinfoilModelsLoading || opencodeModelsLoading;
+  const catalogModelsError = tinfoilModelsError || opencodeModelsError;
+  // Live catalogs (OpenCode, Tinfoil) list unfamiliar ids that change over
+  // time; above a dozen models they get the searchable list instead.
+  const usesCatalogModels =
+    displayedCloudProvider === "tinfoil" || isOpencodeCatalogProvider(displayedCloudProvider);
   const modeTabs = [
     ...(isModeAllowedByPolicy(policyState, "llm", "providers") && cloudProviders.length > 0
       ? [{ id: "cloud", name: t("reasoning.mode.cloud") }]
@@ -539,7 +553,9 @@ export default function ReasoningModelSelector({
     const models =
       displayedCloudProvider === "tinfoil"
         ? tinfoilModels.map(toReasoningModel)
-        : REASONING_PROVIDERS[displayedCloudProvider as keyof typeof REASONING_PROVIDERS]?.models;
+        : isOpencodeCatalogProvider(displayedCloudProvider)
+          ? opencodeModels.map(toReasoningModel)
+          : REASONING_PROVIDERS[displayedCloudProvider as keyof typeof REASONING_PROVIDERS]?.models;
 
     if (!models) return [];
 
@@ -551,7 +567,7 @@ export default function ReasoningModelSelector({
       icon: iconUrl,
       invertInDark,
     }));
-  }, [displayedCloudProvider, openaiModelOptions, tinfoilModels, t]);
+  }, [displayedCloudProvider, openaiModelOptions, tinfoilModels, opencodeModels, t]);
 
   useEffect(() => {
     const localProviderIds = localProviders.map((p) => p.id);
@@ -720,21 +736,31 @@ export default function ReasoningModelSelector({
                     <h4 className="text-sm font-medium text-foreground">
                       {t("reasoning.selectModel")}
                     </h4>
-                    <ModelCardList
-                      models={selectedCloudModels}
-                      selectedModel={
-                        localReasoningProvider === displayedCloudProvider ? reasoningModel : ""
-                      }
-                      onModelSelect={handleModelSelect}
-                    />
-                    {displayedCloudProvider === "tinfoil" && (
+                    {usesCatalogModels && selectedCloudModels.length > MODEL_SEARCH_THRESHOLD ? (
+                      <SearchableModelList
+                        models={selectedCloudModels}
+                        selectedModel={
+                          localReasoningProvider === displayedCloudProvider ? reasoningModel : ""
+                        }
+                        onModelSelect={handleModelSelect}
+                      />
+                    ) : (
+                      <ModelCardList
+                        models={selectedCloudModels}
+                        selectedModel={
+                          localReasoningProvider === displayedCloudProvider ? reasoningModel : ""
+                        }
+                        onModelSelect={handleModelSelect}
+                      />
+                    )}
+                    {usesCatalogModels && (
                       <>
-                        {tinfoilModelsLoading && (
+                        {catalogModelsLoading && (
                           <p className="text-xs text-muted-foreground">
                             {t("reasoning.tinfoil.refreshingModels")}
                           </p>
                         )}
-                        {!tinfoilModelsLoading && tinfoilModelsError && (
+                        {!catalogModelsLoading && catalogModelsError && (
                           <p className="text-xs text-destructive">
                             {t("reasoning.custom.unableToLoadModels")}
                           </p>

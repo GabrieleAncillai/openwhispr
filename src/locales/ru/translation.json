@@ -770,6 +770,7 @@
       "ownerLabel": "Автор: {{owner}}",
       "unableToLoadModels": "Не удалось загрузить модели с конечной точки.",
       "searchPlaceholder": "Поиск моделей…",
+      "clearSearch": "Очистить поиск",
       "selectedGroup": "Выбрано",
       "otherGroup": "Другое",
       "noSearchResults": "Нет моделей по запросу «{{query}}»",
@@ -879,6 +880,9 @@
     "modelRetiredTitle": "Модель больше недоступна",
     "groq": {
       "modelRetired": "Groq прекратил поддержку {{from}}. Выполнен переход на {{to}}."
+    },
+    "opencode": {
+      "modelRetired": "OpenCode прекратил поддержку {{from}}. Выполнен переход на {{to}}."
     },
     "tinfoil": {
       "modelRetired": "Tinfoil прекратил поддержку {{from}}. Выполнен переход на {{to}}.",

@@ -749,6 +749,7 @@
       "ownerLabel": "Proprietário: {{owner}}",
       "unableToLoadModels": "Não foi possível carregar modelos do endpoint.",
       "searchPlaceholder": "Pesquisar modelos…",
+      "clearSearch": "Limpar pesquisa",
       "selectedGroup": "Selecionado",
       "otherGroup": "Outros",
       "noSearchResults": "Nenhum modelo corresponde a \"{{query}}\"",
@@ -858,6 +859,9 @@
     "modelRetiredTitle": "Modelo não disponível",
     "groq": {
       "modelRetired": "A Groq descontinuou {{from}}. Alterado para {{to}}."
+    },
+    "opencode": {
+      "modelRetired": "A OpenCode descontinuou {{from}}. Alterado para {{to}}."
     },
     "tinfoil": {
       "modelRetired": "A Tinfoil descontinuou {{from}}. Alterado para {{to}}.",

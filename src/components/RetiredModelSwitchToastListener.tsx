@@ -1,17 +1,19 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ui/useToast";
-import type { RetiredModelProvider } from "../config/retiredCloudModels";
+import type { RetiredSwitchProvider } from "../config/retiredCloudModels";
 import {
   consumeRetiredModelSwitches,
   useRetiredModelSwitchStore,
 } from "../stores/retiredModelSwitchStore";
 import { isDictationPanelWindow } from "../utils/windowContext";
 
-const RETIRED_MESSAGE_KEYS: Record<RetiredModelProvider, string> = {
+const RETIRED_MESSAGE_KEYS: Record<RetiredSwitchProvider, string> = {
   groq: "reasoning.groq.modelRetired",
   tinfoil: "reasoning.tinfoil.modelRetired",
   openai: "reasoning.openai.modelRetired",
+  "opencode-go": "reasoning.opencode.modelRetired",
+  "opencode-zen": "reasoning.opencode.modelRetired",
 };
 
 /** Alerts the user when a retired cloud model was switched out from under them. */

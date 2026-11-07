@@ -434,6 +434,7 @@
       "ownerLabel": "المالك: {{owner}}",
       "unableToLoadModels": "تعذر تحميل النماذج من نقطة النهاية.",
       "searchPlaceholder": "البحث عن النماذج...",
+      "clearSearch": "مسح البحث",
       "selectedGroup": "المحدد",
       "otherGroup": "أخرى",
       "noSearchResults": "لا توجد نماذج تتطابق مع \"{{query}}\"",
@@ -543,6 +544,9 @@
     "modelRetiredTitle": "النموذج لم يعد متاحًا",
     "groq": {
       "modelRetired": "قام Groq بإيقاف {{from}}. تم التبديل إلى {{to}}."
+    },
+    "opencode": {
+      "modelRetired": "قام OpenCode بإيقاف {{from}}. تم التبديل إلى {{to}}."
     },
     "tinfoil": {
       "modelRetired": "قام Tinfoil بإيقاف {{from}}. تم التبديل إلى {{to}}.",

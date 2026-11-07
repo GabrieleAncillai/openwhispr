@@ -770,6 +770,7 @@
       "ownerLabel": "Proprietario: {{owner}}",
       "unableToLoadModels": "Impossibile caricare i modelli dall'endpoint.",
       "searchPlaceholder": "Cerca modelli…",
+      "clearSearch": "Cancella ricerca",
       "selectedGroup": "Selezionato",
       "otherGroup": "Altro",
       "noSearchResults": "Nessun modello corrisponde a \"{{query}}\"",
@@ -879,6 +880,9 @@
     "modelRetiredTitle": "Modello non più disponibile",
     "groq": {
       "modelRetired": "Groq ha ritirato {{from}}. Passato a {{to}}."
+    },
+    "opencode": {
+      "modelRetired": "OpenCode ha ritirato {{from}}. Passato a {{to}}."
     },
     "tinfoil": {
       "modelRetired": "Tinfoil ha ritirato {{from}}. Passato a {{to}}.",

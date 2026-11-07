@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { RetiredModelProvider } from "../config/retiredCloudModels";
+import type { RetiredSwitchProvider } from "../config/retiredCloudModels";
 
 export interface RetiredModelSwitch {
-  provider: RetiredModelProvider;
+  provider: RetiredSwitchProvider;
   /** Display name of the model the provider retired. */
   from: string;
   /** Display name of the model we moved the user to. */

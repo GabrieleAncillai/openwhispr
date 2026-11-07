@@ -17,6 +17,7 @@ import {
   selectIsCloudCleanupMode,
   selectIsCloudDictationAgentMode,
   selectIsCloudTranslationMode,
+  reasoningModelBelongsToProvider,
 } from "../../stores/settingsStore";
 import { usePolicySnapshot } from "../../hooks/usePolicy";
 import { getLanguageLabel } from "../../utils/languageSupport";
@@ -222,7 +223,11 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
 
       const cleanupProvider = isCloudMode
         ? "openwhispr"
-        : (cleanupModel && getModelProvider(cleanupModel)) || "openai";
+        : (cleanupModel &&
+            (reasoningModelBelongsToProvider(effectiveSettings.cleanupProvider, cleanupModel)
+              ? effectiveSettings.cleanupProvider
+              : getModelProvider(cleanupModel))) ||
+          "openai";
 
       logger.debug(
         "PromptStudio test starting",
